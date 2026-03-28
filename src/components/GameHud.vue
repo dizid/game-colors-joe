@@ -56,8 +56,8 @@ const comboMultiplier = computed(() => {
       <!-- Pause button -->
       <button
         @click="emit('pause')"
-        class="bg-black/50 backdrop-blur-sm rounded-xl px-3 py-2 text-white/80 hover:text-white
-               hover:bg-black/60 transition-colors active:scale-95 touch-manipulation"
+        class="bg-black/50 backdrop-blur-sm rounded-xl px-3 py-2 min-w-11 min-h-11 flex items-center justify-center
+               text-white/80 hover:text-white hover:bg-black/60 transition-colors active:scale-95 touch-manipulation"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
