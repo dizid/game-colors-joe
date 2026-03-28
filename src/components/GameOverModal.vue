@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { GameState } from '../types/game'
+import { getFunnyCoverageLabel } from '../lib/humor'
 
 const props = defineProps<{
   state: GameState
@@ -18,14 +19,6 @@ const emit = defineEmits<{
 }>()
 
 const isNewBest = props.state.score > 0 && props.state.score >= props.bestScore
-
-function getCoverageLabel(pct: number): string {
-  if (pct >= 80) return 'JOE APPROVED'
-  if (pct >= 60) return 'Street Art'
-  if (pct >= 40) return 'Full Chaos'
-  if (pct >= 20) return 'Getting Messy'
-  return 'Shy Painter'
-}
 </script>
 
 <template>
@@ -58,7 +51,7 @@ function getCoverageLabel(pct: number): string {
         </div>
         <div class="flex justify-between text-white/60 text-sm">
           <span>Coverage</span>
-          <span class="font-mono">{{ Math.round(coverage) }}% - {{ getCoverageLabel(coverage) }}</span>
+          <span class="font-mono">{{ Math.round(coverage) }}% - {{ getFunnyCoverageLabel(coverage) }}</span>
         </div>
         <div v-if="bestScore > 0" class="flex justify-between text-white/40 text-xs pt-1 border-t border-white/5">
           <span>Previous Best</span>

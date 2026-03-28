@@ -3,6 +3,7 @@ import type { GameModeConfig, SplatResult, ModeUpdate } from '../types/modes'
 import type { SplatConfig, GameState } from '../types/game'
 import { scoreSplat } from '../lib/splatter-engine'
 import { getComboName } from '../lib/color-palette'
+import { getFunnyEndTitle, getFunnyEndSubtitle } from '../lib/humor'
 
 export class FreeFlingMode extends BaseMode {
   readonly config: GameModeConfig = {
@@ -45,14 +46,10 @@ export class FreeFlingMode extends BaseMode {
   }
 
   getEndTitle(state: GameState): string {
-    if (state.score >= 5000) return 'JOE APPROVED!'
-    if (state.score >= 3000) return 'FULL CHAOS!'
-    if (state.score >= 1500) return 'Getting Messy!'
-    if (state.score >= 500) return 'Nice Start!'
-    return 'Shy Painter...'
+    return getFunnyEndTitle(state.score, state.splatCount, state.maxCombo, 0)
   }
 
   getEndSubtitle(state: GameState): string {
-    return `${state.splatCount} splats | Max combo: x${state.maxCombo}`
+    return getFunnyEndSubtitle(state.score, state.splatCount, state.maxCombo, 0)
   }
 }

@@ -8,6 +8,7 @@ import { GameLoop } from '../lib/game-loop'
 import { audio } from '../lib/audio-manager'
 import { saveHighScore, getBestScore } from '../lib/storage'
 import { drawSplat, clearCanvas, fillWhite, calculateCoverage } from '../lib/canvas-renderer'
+import { getJoeMood, getIdleTaunt, getComboBreakText, rollForSillyEvent, type JoeMood, type SillyEvent } from '../lib/humor'
 
 // Feedback event for UI display
 export interface FeedbackEvent {
@@ -44,6 +45,14 @@ export function useGameState() {
   const bestScore = ref(0)
   const coverage = ref(0)
 
+  // Humor state
+  const joeMood = ref<JoeMood>('idle')
+  const idleTaunt = ref('')
+  const sillyEvent = ref<SillyEvent | null>(null)
+  let timeSinceLastSplat = 0
+  let lastIdleTauntTime = 0
+  let previousCombo = 0
+
   // Canvas refs - set by SplatCanvas component
   let persistCtx: CanvasRenderingContext2D | null = null
   let animCtx: CanvasRenderingContext2D | null = null
@@ -77,6 +86,12 @@ export function useGameState() {
     comboText.value = ''
     feedbacks.value = []
     coverage.value = 0
+    joeMood.value = 'idle'
+    idleTaunt.value = ''
+    sillyEvent.value = null
+    timeSinceLastSplat = 0
+    lastIdleTauntTime = 0
+    previousCombo = 0
 
     bestScore.value = getBestScore(modeId)
 
@@ -122,13 +137,30 @@ export function useGameState() {
       }
     }
 
+    // Track idle time and update Joe's mood
+    timeSinceLastSplat += dt
+    joeMood.value = getJoeMood(state.combo, timeSinceLastSplat, state.isComplete)
+
+    // Show idle taunts when Joe gets bored
+    const now = Date.now()
+    if (timeSinceLastSplat > 5 && now - lastIdleTauntTime > 4000) {
+      idleTaunt.value = getIdleTaunt()
+      lastIdleTauntTime = now
+      // Clear after 3 seconds
+      setTimeout(() => { idleTaunt.value = '' }, 3000)
+    }
+
+    // Clear silly events after their duration
+    if (sillyEvent.value) {
+      sillyEvent.value = null // cleared by timeout set in handleGesture
+    }
+
     // Check if game is complete
     if (modeUpdate.completed && !state.isComplete) {
       endGame()
     }
 
     // Clean up old feedbacks
-    const now = Date.now()
     feedbacks.value = feedbacks.value.filter(f => now - f.timestamp < 1200)
   }
 
@@ -163,6 +195,11 @@ export function useGameState() {
     // Get score from game mode
     const result = activeMode.value.onSplat(splatConfig, state)
 
+    // Reset idle tracking
+    timeSinceLastSplat = 0
+    idleTaunt.value = ''
+    previousCombo = state.combo
+
     // Update state
     if (result.score > 0) {
       state.score += result.score
@@ -170,8 +207,12 @@ export function useGameState() {
       state.maxCombo = Math.max(state.maxCombo, state.combo)
       state.splatCount++
 
-      // Audio
-      audio.playSplat(gesture.pressure)
+      // Audio - big splats get the funny fart-splat sound
+      if (gesture.pressure > 0.8 && speed > 500) {
+        audio.playFartSplat()
+      } else {
+        audio.playSplat(gesture.pressure)
+      }
       if (speed > 400) audio.playWhoosh(gesture.pressure)
 
       // Combo feedback
@@ -179,6 +220,11 @@ export function useGameState() {
       if (comboName && comboName !== comboText.value) {
         comboText.value = comboName
         audio.playCombo(state.combo >= 10 ? 5 : state.combo >= 5 ? 3 : 2)
+
+        // Burp sound on high combos for extra hilarity
+        if (state.combo >= 7) {
+          setTimeout(() => audio.playBurp(), 200)
+        }
 
         // Screen shake for high combos
         if (state.combo >= 5) {
@@ -190,9 +236,28 @@ export function useGameState() {
         if (navigator.vibrate) navigator.vibrate(50)
       }
 
-      // Points feedback
+      // Points feedback with optional quip
       addFeedback(result, gesture.position)
+
+      // Roll for silly random events
+      const event = rollForSillyEvent(state.splatCount)
+      if (event) {
+        sillyEvent.value = event
+        state.score += event.bonusPoints
+        audio.playCombo(4) // fanfare for event
+        if (navigator.vibrate) navigator.vibrate([50, 30, 50])
+        setTimeout(() => { sillyEvent.value = null }, event.duration)
+      }
     } else {
+      // Combo break!
+      const breakText = getComboBreakText(previousCombo)
+      if (breakText) {
+        addFeedback(
+          { score: 0, comboMultiplier: 1, feedback: 'miss', feedbackText: breakText },
+          gesture.position
+        )
+        audio.playMiss()
+      }
       state.combo = 0
       comboText.value = ''
       audio.playSplat(0.3)
@@ -273,6 +338,9 @@ export function useGameState() {
     screenShake,
     bestScore,
     coverage,
+    joeMood,
+    idleTaunt,
+    sillyEvent,
     setCanvasContexts,
     startGame,
     handleGesture,

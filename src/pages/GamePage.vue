@@ -22,6 +22,9 @@ const {
   screenShake,
   bestScore,
   coverage,
+  joeMood,
+  idleTaunt,
+  sillyEvent,
   setCanvasContexts,
   startGame,
   handleGesture,
@@ -151,6 +154,9 @@ onUnmounted(() => {
         :combo-text="comboText"
         :has-timer="activeMode.config.hasTimer"
         :has-score="activeMode.config.hasScore"
+        :joe-mood="joeMood"
+        :idle-taunt="idleTaunt"
+        :silly-event="sillyEvent"
         @pause="onPause"
       />
     </div>

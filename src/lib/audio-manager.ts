@@ -161,6 +161,75 @@ export class AudioManager {
     osc.stop(now + 0.3)
   }
 
+  // Funny fart-splat for big hits
+  playFartSplat(): void {
+    if (!this.enabled || !this.ctx) return
+
+    const now = this.ctx.currentTime
+    const duration = 0.25
+
+    // Low rumbling oscillator
+    const osc = this.ctx.createOscillator()
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(80 + Math.random() * 30, now)
+    osc.frequency.exponentialRampToValueAtTime(40, now + duration)
+
+    // Noise layer for the "wet" part
+    const bufferSize = Math.floor(this.ctx.sampleRate * duration)
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate)
+    const data = buffer.getChannelData(0)
+    for (let i = 0; i < bufferSize; i++) {
+      const t = i / bufferSize
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 5) * 0.4
+    }
+    const noise = this.ctx.createBufferSource()
+    noise.buffer = buffer
+
+    // Combine
+    const filter = this.ctx.createBiquadFilter()
+    filter.type = 'lowpass'
+    filter.frequency.value = 300
+    filter.Q.value = 3
+
+    const gain = this.ctx.createGain()
+    gain.gain.setValueAtTime(0.15, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+
+    osc.connect(filter)
+    noise.connect(filter)
+    filter.connect(gain)
+    gain.connect(this.ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + duration)
+    noise.start(now)
+    noise.stop(now + duration)
+  }
+
+  // Burp sound for high combos
+  playBurp(): void {
+    if (!this.enabled || !this.ctx) return
+
+    const now = this.ctx.currentTime
+    const duration = 0.15
+
+    const osc = this.ctx.createOscillator()
+    osc.type = 'square'
+    osc.frequency.setValueAtTime(120, now)
+    osc.frequency.setValueAtTime(90, now + 0.03)
+    osc.frequency.exponentialRampToValueAtTime(60, now + duration)
+
+    const gain = this.ctx.createGain()
+    gain.gain.setValueAtTime(0.07, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+
+    osc.connect(gain)
+    gain.connect(this.ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + duration)
+  }
+
   // Button click
   playClick(): void {
     if (!this.enabled || !this.ctx) return

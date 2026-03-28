@@ -1,8 +1,22 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import { getAvailableModes } from '../modes'
 import { getBestScore } from '../lib/storage'
+import { getRandomTagline } from '../lib/humor'
 
 const modes = getAvailableModes()
+const tagline = ref(getRandomTagline())
+let taglineInterval: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  taglineInterval = setInterval(() => {
+    tagline.value = getRandomTagline()
+  }, 4000)
+})
+
+onUnmounted(() => {
+  clearInterval(taglineInterval)
+})
 
 const emit = defineEmits<{
   startGame: [modeId: string]
@@ -28,8 +42,8 @@ function getBest(modeId: string): number {
           Splat Factory
         </span>
       </h1>
-      <p class="text-white/50 mt-3 text-sm">
-        Fling paint. Make art. Get messy.
+      <p class="text-white/50 mt-3 text-sm transition-opacity duration-500">
+        {{ tagline }}
       </p>
     </div>
 

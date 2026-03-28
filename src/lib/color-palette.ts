@@ -35,14 +35,18 @@ export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-// Combo level names
+// Combo level names - escalating absurdity
 export const COMBO_NAMES: Record<number, string> = {
   1: '',
   2: 'Nice!',
   3: 'MESSY!',
+  4: "MOM'S GONNA KILL ME!",
   5: 'CHAOTIC!',
-  8: 'FULL RAMPAGE!',
-  10: 'JOE MODE!!!',
+  7: 'FULL RAMPAGE!',
+  9: 'PICASSO WHO??',
+  11: 'JOE MODE!!!',
+  15: 'ACTUAL LEGEND!!!',
+  20: 'ARE YOU EVEN HUMAN!?',
 }
 
 export function getComboName(combo: number): string {

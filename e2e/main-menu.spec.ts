@@ -10,8 +10,12 @@ test.describe('Main Menu', () => {
     await expect(page.locator('h1')).toContainText('Splat Factory')
   })
 
-  test('displays the tagline', async ({ page }) => {
-    await expect(page.getByText('Fling paint. Make art. Get messy.')).toBeVisible()
+  test('displays a rotating tagline', async ({ page }) => {
+    // Tagline is now randomized from a pool - just check the paragraph exists and has text
+    const tagline = page.locator('h1 + p')
+    await expect(tagline).toBeVisible()
+    const text = await tagline.textContent()
+    expect(text!.trim().length).toBeGreaterThan(10)
   })
 
   test('displays the footer credit', async ({ page }) => {
