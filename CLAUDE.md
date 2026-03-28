@@ -59,4 +59,6 @@ Game state lives in `useGameState` composable (reactive Vue refs, not Pinia). Th
 ## Deployment
 
 - **Platform**: Netlify (static site)
+- **Site**: joes-splat-factory (ID: d63c6446-b8bd-41f8-9354-e18d0cba81b0)
+- **URL**: https://joes-splat-factory.netlify.app
 - **GitHub repo**: dizid/game-colors-joe
