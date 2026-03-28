@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas-white: #FAFAF7;
+  --color-canvas-frame: #8B7355;
+  --color-deep-navy: #1a1a2e;
+  --color-accent: #FF6B35;
+
+  --color-bangkok-blue: #1E90FF;
+  --color-street-mango: #FF8C00;
+  --color-tuk-tuk-red: #DC143C;
+  --color-monsoon-teal: #20B2AA;
+  --color-temple-yellow: #FFD700;
+  --color-lotus-pink: #FF69B4;
+  --color-pad-thai-orange: #FF4500;
+  --color-elephant-grey: #708090;
+
+  --font-display: "Fredoka", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@font-face {
+  font-family: "Fredoka";
+  src: url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-deep-navy);
+  font-family: var(--font-display);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.screen-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes splat-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes combo-pop {
+  0% { transform: scale(0.5) translateY(20px); opacity: 0; }
+  50% { transform: scale(1.2) translateY(-10px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 0; }
+}
+
+.combo-text {
+  animation: combo-pop 1.2s ease-out forwards;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 107, 53, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.8); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-60px); opacity: 0; }
+}
+
+.float-up {
+  animation: float-up 0.8s ease-out forwards;
+}
+
+@keyframes drip {
+  0% { transform: scaleY(0); transform-origin: top; }
+  100% { transform: scaleY(1); transform-origin: top; }
+}
