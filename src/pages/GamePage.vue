@@ -75,33 +75,32 @@ function onShare(): void {
   const dataUrl = getCanvasDataUrl()
   if (!dataUrl) return
 
-  // Try native share API first
+  // Build a fun share message with score
+  const title = activeMode.value?.getEndTitle(state) ?? 'Check out my painting!'
+  const shareText = state.score > 0
+    ? `I scored ${state.score.toLocaleString()} on Joe's Splat Factory! ${title} 🎨💥`
+    : `Check out my painting from Joe's Splat Factory! 🎨`
+
+  // Try native share API first (works great on mobile for social media)
   if (navigator.share) {
     fetch(dataUrl)
       .then(r => r.blob())
       .then(blob => {
         const file = new File([blob], `joe-painting-${Date.now()}.png`, { type: 'image/png' })
-        navigator.share({ title: "Joe's Splat Factory", files: [file] }).catch(() => {
-          // Fallback to download
+        navigator.share({
+          title: "Joe's Splat Factory",
+          text: shareText,
+          url: 'https://joes-splat-factory.netlify.app',
+          files: [file],
+        }).catch(() => {
           downloadArt(dataUrl)
         })
       })
   } else {
     downloadArt(dataUrl)
   }
-}
 
-function downloadArt(dataUrl: string): void {
-  const link = document.createElement('a')
-  link.href = dataUrl
-  link.download = `joe-painting-${Date.now()}.png`
-  link.click()
-}
-
-function onSave(): void {
-  const dataUrl = getCanvasDataUrl()
-  if (!dataUrl) return
-
+  // Also auto-save artwork to gallery
   saveArtwork({
     id: `art-${Date.now()}`,
     dataUrl,
@@ -109,6 +108,13 @@ function onSave(): void {
     mode: modeId,
     score: state.score,
   })
+}
+
+function downloadArt(dataUrl: string): void {
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = `joe-painting-${Date.now()}.png`
+  link.click()
 }
 
 // Watch for game completion
@@ -188,7 +194,6 @@ onUnmounted(() => {
       @play-again="onPlayAgain"
       @go-home="onGoHome"
       @share="onShare"
-      @save="onSave"
     />
   </div>
 </template>

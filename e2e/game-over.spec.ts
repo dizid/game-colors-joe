@@ -48,8 +48,7 @@ test.describe('Game Over Modal', () => {
     await playUntilGameOver(page)
 
     await expect(page.getByText('Play Again')).toBeVisible()
-    await expect(page.getByText('Share Art')).toBeVisible()
-    await expect(page.getByText('Save Art')).toBeVisible()
+    await expect(page.getByText('Share')).toBeVisible()
     await expect(page.getByText('Back to Menu')).toBeVisible()
   })
 
