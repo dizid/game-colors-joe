@@ -60,12 +60,13 @@ export interface PaintColor {
 }
 
 export interface GestureEvent {
-  type: 'tap' | 'fling' | 'drag'
+  type: 'tap' | 'fling' | 'drag' | 'spread'
   position: Vector2
   velocity: Vector2
   path: Vector2[]
   pressure: number
   duration: number
+  fingerSpread?: number // distance between two fingers for 'spread' type
 }
 
 export interface GameState {

@@ -32,8 +32,8 @@ function generateBlobs(
 ): SplatBlob[] {
   const blobs: SplatBlob[] = []
 
-  // Main central blob - larger when pressure is high
-  const mainRadius = size * (0.8 + pressure * 0.5) * (1 + speed * 0.001)
+  // Main central blob - larger when pressure is high, speed capped to prevent screen-filling blobs
+  const mainRadius = size * (0.8 + pressure * 0.5) * (1 + Math.min(speed * 0.0003, 1.5))
   blobs.push({
     center: {
       x: center.x + (Math.random() - 0.5) * 4,
@@ -43,7 +43,7 @@ function generateBlobs(
     color: varyColor(color, 15),
     opacity: 0.85 + Math.random() * 0.15,
     rotation: Math.random() * Math.PI * 2,
-    elongation: 1 + speed * 0.002, // faster flings = more elongated
+    elongation: 1 + Math.min(speed * 0.0008, 1.5), // faster flings = more elongated, capped
   })
 
   // 2-4 secondary blobs around the center
@@ -76,13 +76,13 @@ function generateTendrils(
 ): SplatTendril[] {
   const tendrils: SplatTendril[] = []
 
-  // More tendrils for faster flings
-  const count = Math.min(8, 3 + Math.floor(speed * 0.01))
+  // More tendrils for faster flings, capped at 7
+  const count = Math.min(7, 3 + Math.floor(Math.min(speed * 0.003, 4)))
 
   for (let i = 0; i < count; i++) {
     // Tendrils biased toward velocity direction
     const tendrilAngle = angle + (Math.random() - 0.5) * Math.PI * 1.5
-    const length = size * (1.5 + speed * 0.005 + Math.random() * 2)
+    const length = size * (1.5 + Math.min(speed * 0.001, 3) + Math.random() * 2)
     const width = size * (0.15 + Math.random() * 0.2)
 
     const endX = center.x + Math.cos(tendrilAngle) * length
@@ -125,11 +125,11 @@ function generateDots(
 ): SplatBlob[] {
   const dots: SplatBlob[] = []
 
-  // Satellite dots - more for faster flings
-  const count = 8 + Math.floor(speed * 0.015 + Math.random() * 10)
+  // Satellite dots - more for faster flings, capped to stay reasonable
+  const count = 8 + Math.floor(Math.min(speed * 0.005, 12) + Math.random() * 6)
 
   for (let i = 0; i < count; i++) {
-    const dist = size * (1.5 + Math.random() * 4 + speed * 0.008)
+    const dist = size * (1.5 + Math.random() * 3 + Math.min(speed * 0.002, 5))
     // Bias dots toward the fling direction
     const dotAngle = angle + (Math.random() - 0.5) * Math.PI * 1.8
     const dotSize = 1 + Math.random() * (size * 0.2)

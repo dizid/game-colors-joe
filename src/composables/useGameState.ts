@@ -180,9 +180,14 @@ export function useGameState() {
 
     const color = getColor(state.selectedColorId)
 
-    // Calculate base size from gesture
+    // Calculate base size from gesture - capped to prevent oversized splashes on fast mobile swipes
     const speed = Math.sqrt(gesture.velocity.x ** 2 + gesture.velocity.y ** 2)
-    const size = 12 + gesture.pressure * 20 + Math.min(speed * 0.02, 15)
+    let size = 10 + gesture.pressure * 12 + Math.min(speed * 0.008, 8)
+
+    // Two-finger spread: bigger, wider splat based on finger distance
+    if (gesture.type === 'spread' && gesture.fingerSpread) {
+      size += Math.min(gesture.fingerSpread * 0.08, 15) // bonus size from spread, capped
+    }
 
     const splatConfig: SplatConfig = {
       position: gesture.position,
@@ -207,8 +212,11 @@ export function useGameState() {
       state.maxCombo = Math.max(state.maxCombo, state.combo)
       state.splatCount++
 
-      // Audio - big splats get the funny fart-splat sound
-      if (gesture.pressure > 0.8 && speed > 500) {
+      // Audio - two-finger spread gets fart-splat, big hits too
+      if (gesture.type === 'spread') {
+        audio.playFartSplat()
+        state.score += 50 // bonus for two-finger technique
+      } else if (gesture.pressure > 0.8 && speed > 500) {
         audio.playFartSplat()
       } else {
         audio.playSplat(gesture.pressure)
