@@ -230,6 +230,50 @@ export class AudioManager {
     osc.stop(now + duration)
   }
 
+  // Squelchy footstep in paint
+  playFootstep(): void {
+    if (!this.enabled || !this.ctx) return
+
+    const now = this.ctx.currentTime
+    const duration = 0.2
+
+    // Low thud for the step impact
+    const osc = this.ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(100 + Math.random() * 40, now)
+    osc.frequency.exponentialRampToValueAtTime(50, now + duration)
+
+    // Squelch noise layer
+    const bufferSize = Math.floor(this.ctx.sampleRate * duration)
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate)
+    const data = buffer.getChannelData(0)
+    for (let i = 0; i < bufferSize; i++) {
+      const t = i / bufferSize
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 12) * 0.25
+    }
+    const noise = this.ctx.createBufferSource()
+    noise.buffer = buffer
+
+    const filter = this.ctx.createBiquadFilter()
+    filter.type = 'lowpass'
+    filter.frequency.value = 600
+    filter.Q.value = 2
+
+    const gain = this.ctx.createGain()
+    gain.gain.setValueAtTime(0.12, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+
+    osc.connect(gain)
+    noise.connect(filter)
+    filter.connect(gain)
+    gain.connect(this.ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + duration)
+    noise.start(now)
+    noise.stop(now + duration)
+  }
+
   // Button click
   playClick(): void {
     if (!this.enabled || !this.ctx) return

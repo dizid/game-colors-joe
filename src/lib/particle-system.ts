@@ -95,6 +95,11 @@ export class ParticleSystem {
     return ready
   }
 
+  // Queue a pre-generated splat directly (e.g. footprints) without emitting particles
+  queueSplat(splat: Splat, delay: number = 0.1): void {
+    this.pendingSplats.push({ splat, delay })
+  }
+
   hasActiveParticles(): boolean {
     return this.particles.some(p => p.active) || this.pendingSplats.length > 0
   }

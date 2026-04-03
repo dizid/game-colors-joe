@@ -30,11 +30,21 @@ export interface SplatTendril {
   opacity: number
 }
 
+export interface Footprint {
+  position: Vector2
+  rotation: number
+  size: number
+  color: string
+  opacity: number
+  isLeft: boolean
+}
+
 export interface Splat {
   id: string
   blobs: SplatBlob[]
   tendrils: SplatTendril[]
   dots: SplatBlob[]
+  footprints?: Footprint[]
   timestamp: number
 }
 

@@ -1,4 +1,4 @@
-import type { Vector2, SplatConfig, Splat, SplatBlob, SplatTendril } from '../types/game'
+import type { Vector2, SplatConfig, Splat, SplatBlob, SplatTendril, Footprint } from '../types/game'
 import { varyColor } from './color-palette'
 
 let splatCounter = 0
@@ -148,6 +148,72 @@ function generateDots(
   }
 
   return dots
+}
+
+// Generate a footprint splat - as if someone stepped in the paint
+export function generateFootprintSplat(
+  position: Vector2,
+  color: string,
+  size: number,
+  walkAngle: number
+): Splat {
+  const isLeft = Math.random() > 0.5
+  const footprints: Footprint[] = [{
+    position,
+    rotation: walkAngle + (Math.random() - 0.5) * 0.4,
+    size: size * 0.8,
+    color: varyColor(color, 10),
+    opacity: 0.7 + Math.random() * 0.25,
+    isLeft,
+  }]
+
+  // 40% chance of a second footprint (walking pair)
+  if (Math.random() < 0.4) {
+    const stepDist = size * 2.5
+    const sideOffset = size * 0.8
+    const perpAngle = walkAngle + Math.PI / 2
+    footprints.push({
+      position: {
+        x: position.x + Math.cos(walkAngle) * stepDist + Math.cos(perpAngle) * sideOffset,
+        y: position.y + Math.sin(walkAngle) * stepDist + Math.sin(perpAngle) * sideOffset,
+      },
+      rotation: walkAngle + (Math.random() - 0.5) * 0.3,
+      size: size * 0.8 * (0.95 + Math.random() * 0.1),
+      color: varyColor(color, 10),
+      opacity: 0.6 + Math.random() * 0.2,
+      isLeft: !isLeft,
+    })
+  }
+
+  // Small drip dots around the footprints
+  const dots: SplatBlob[] = []
+  for (const fp of footprints) {
+    const dripCount = 3 + Math.floor(Math.random() * 5)
+    for (let i = 0; i < dripCount; i++) {
+      const dist = fp.size * (1.5 + Math.random() * 2)
+      const angle = Math.random() * Math.PI * 2
+      dots.push({
+        center: {
+          x: fp.position.x + Math.cos(angle) * dist,
+          y: fp.position.y + Math.sin(angle) * dist,
+        },
+        radius: 1 + Math.random() * 2,
+        color: varyColor(color, 20),
+        opacity: 0.4 + Math.random() * 0.3,
+        rotation: 0,
+        elongation: 1,
+      })
+    }
+  }
+
+  return {
+    id: `splat-${++splatCounter}`,
+    blobs: [],
+    tendrils: [],
+    dots,
+    footprints,
+    timestamp: Date.now(),
+  }
 }
 
 // Calculate score for a splat based on canvas position
