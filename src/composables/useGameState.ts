@@ -8,6 +8,7 @@ import { GameLoop } from '../lib/game-loop'
 import { audio } from '../lib/audio-manager'
 import { saveHighScore, getBestScore } from '../lib/storage'
 import { drawSplat, clearCanvas, fillWhite, calculateCoverage } from '../lib/canvas-renderer'
+import { generateFootprintSplat } from '../lib/splatter-engine'
 import { getJoeMood, getIdleTaunt, getComboBreakText, rollForSillyEvent, type JoeMood, type SillyEvent } from '../lib/humor'
 
 // Feedback event for UI display
@@ -273,6 +274,19 @@ export function useGameState() {
 
     // Emit particles + queue splat rendering
     particles.emit(splatConfig)
+
+    // Random footprint chance (~8%) - as if someone walked through the paint
+    if (Math.random() < 0.08) {
+      const footAngle = Math.random() * Math.PI * 2
+      const footDist = size * 2 + Math.random() * size * 3
+      const footPos = {
+        x: gesture.position.x + Math.cos(footAngle) * footDist,
+        y: gesture.position.y + Math.sin(footAngle) * footDist,
+      }
+      const footSplat = generateFootprintSplat(footPos, color.hex, size, footAngle)
+      particles.queueSplat(footSplat, 0.3 + Math.random() * 0.2)
+      audio.playFootstep()
+    }
 
     // Start loop if not running (for zen mode)
     if (gameLoop.value && !gameLoop.value.isRunning) {

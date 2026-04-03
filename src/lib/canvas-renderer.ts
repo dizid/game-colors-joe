@@ -1,4 +1,4 @@
-import type { Splat, SplatBlob, SplatTendril, Particle } from '../types/game'
+import type { Splat, SplatBlob, SplatTendril, Particle, Footprint } from '../types/game'
 
 // Draw a complete splat to a canvas context
 export function drawSplat(ctx: CanvasRenderingContext2D, splat: Splat): void {
@@ -15,6 +15,13 @@ export function drawSplat(ctx: CanvasRenderingContext2D, splat: Splat): void {
   // Draw satellite dots
   for (const dot of splat.dots) {
     drawBlob(ctx, dot)
+  }
+
+  // Draw footprints if present
+  if (splat.footprints) {
+    for (const fp of splat.footprints) {
+      drawFootprint(ctx, fp)
+    }
   }
 }
 
@@ -102,6 +109,60 @@ function bezierPoint(
     x: mt * mt * mt * p0.x + 3 * mt * mt * t * p1.x + 3 * mt * t * t * p2.x + t * t * t * p3.x,
     y: mt * mt * mt * p0.y + 3 * mt * mt * t * p1.y + 3 * mt * t * t * p2.y + t * t * t * p3.y,
   }
+}
+
+function drawFootprint(ctx: CanvasRenderingContext2D, fp: Footprint): void {
+  ctx.save()
+  ctx.translate(fp.position.x, fp.position.y)
+  ctx.rotate(fp.rotation)
+  if (!fp.isLeft) ctx.scale(-1, 1)
+  ctx.globalAlpha = fp.opacity
+  ctx.fillStyle = fp.color
+
+  const s = fp.size
+
+  // Draw sole shape using bezier curves
+  ctx.beginPath()
+  ctx.moveTo(-s * 0.3, s * 1.0) // heel left
+  ctx.bezierCurveTo(
+    -s * 0.35, s * 0.4,
+    -s * 0.5, -s * 0.2,
+    -s * 0.45, -s * 0.6
+  )
+  ctx.bezierCurveTo(
+    -s * 0.4, -s * 0.8,
+    s * 0.3, -s * 0.85,
+    s * 0.35, -s * 0.55
+  )
+  ctx.bezierCurveTo(
+    s * 0.4, -s * 0.2,
+    s * 0.3, s * 0.3,
+    s * 0.25, s * 1.0
+  )
+  ctx.bezierCurveTo(
+    s * 0.1, s * 1.15,
+    -s * 0.15, s * 1.15,
+    -s * 0.3, s * 1.0
+  )
+  ctx.closePath()
+  ctx.fill()
+
+  // Draw 5 toes in an arc
+  const toes = [
+    { x: -s * 0.32, y: -s * 0.85, r: s * 0.12 },
+    { x: -s * 0.12, y: -s * 0.95, r: s * 0.09 },
+    { x: s * 0.06, y: -s * 0.95, r: s * 0.08 },
+    { x: s * 0.2, y: -s * 0.9, r: s * 0.07 },
+    { x: s * 0.32, y: -s * 0.8, r: s * 0.06 },
+  ]
+  for (const toe of toes) {
+    ctx.beginPath()
+    ctx.arc(toe.x, toe.y, toe.r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  ctx.globalAlpha = 1
+  ctx.restore()
 }
 
 // Draw a single particle (used during animation)
