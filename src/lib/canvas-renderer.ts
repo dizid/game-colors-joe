@@ -117,52 +117,123 @@ function drawFootprint(ctx: CanvasRenderingContext2D, fp: Footprint): void {
   ctx.rotate(fp.rotation)
   if (!fp.isLeft) ctx.scale(-1, 1)
   ctx.globalAlpha = fp.opacity
-  ctx.fillStyle = fp.color
 
   const s = fp.size
 
-  // Draw sole shape using bezier curves
+  // Build the sole path as a reusable function
+  function solePath(): void {
+    ctx.beginPath()
+    ctx.moveTo(-s * 0.3, s * 1.0) // heel left
+    ctx.bezierCurveTo(
+      -s * 0.35, s * 0.4,
+      -s * 0.5, -s * 0.2,
+      -s * 0.45, -s * 0.6
+    )
+    ctx.bezierCurveTo(
+      -s * 0.4, -s * 0.8,
+      s * 0.3, -s * 0.85,
+      s * 0.35, -s * 0.55
+    )
+    ctx.bezierCurveTo(
+      s * 0.4, -s * 0.2,
+      s * 0.3, s * 0.3,
+      s * 0.25, s * 1.0
+    )
+    ctx.bezierCurveTo(
+      s * 0.1, s * 1.15,
+      -s * 0.15, s * 1.15,
+      -s * 0.3, s * 1.0
+    )
+    ctx.closePath()
+  }
+
+  // Parse color to get RGB components for darkening/lightening
+  const rgb = parseColor(fp.color)
+  const darkColor = `rgb(${Math.max(0, rgb.r - 60)}, ${Math.max(0, rgb.g - 60)}, ${Math.max(0, rgb.b - 60)})`
+  const lightColor = `rgb(${Math.min(255, rgb.r + 70)}, ${Math.min(255, rgb.g + 70)}, ${Math.min(255, rgb.b + 70)})`
+
+  // 1) Outer dark edge (paint squeezed out from under foot) — thick stroke
+  solePath()
+  ctx.fillStyle = darkColor
+  ctx.fill()
+  ctx.lineWidth = s * 0.18
+  ctx.lineJoin = 'round'
+  ctx.strokeStyle = darkColor
+  ctx.stroke()
+
+  // 2) Lighter interior fill (like the reference image)
+  ctx.save()
+  solePath()
+  // Shrink slightly inward by using a clip and smaller fill
+  ctx.clip()
+  ctx.fillStyle = lightColor
+  ctx.globalAlpha = fp.opacity * 0.85
   ctx.beginPath()
-  ctx.moveTo(-s * 0.3, s * 1.0) // heel left
+  ctx.moveTo(-s * 0.2, s * 0.85)
   ctx.bezierCurveTo(
-    -s * 0.35, s * 0.4,
-    -s * 0.5, -s * 0.2,
-    -s * 0.45, -s * 0.6
+    -s * 0.25, s * 0.3,
+    -s * 0.38, -s * 0.1,
+    -s * 0.32, -s * 0.45
   )
   ctx.bezierCurveTo(
-    -s * 0.4, -s * 0.8,
-    s * 0.3, -s * 0.85,
-    s * 0.35, -s * 0.55
+    -s * 0.28, -s * 0.65,
+    s * 0.2, -s * 0.7,
+    s * 0.24, -s * 0.4
   )
   ctx.bezierCurveTo(
-    s * 0.4, -s * 0.2,
-    s * 0.3, s * 0.3,
-    s * 0.25, s * 1.0
+    s * 0.28, -s * 0.1,
+    s * 0.2, s * 0.2,
+    s * 0.16, s * 0.85
   )
   ctx.bezierCurveTo(
-    s * 0.1, s * 1.15,
-    -s * 0.15, s * 1.15,
-    -s * 0.3, s * 1.0
+    s * 0.05, s * 0.95,
+    -s * 0.08, s * 0.95,
+    -s * 0.2, s * 0.85
   )
   ctx.closePath()
   ctx.fill()
+  ctx.restore()
 
-  // Draw 5 toes in an arc
+  // 3) Draw 5 toes — dark outer, light inner
   const toes = [
-    { x: -s * 0.32, y: -s * 0.85, r: s * 0.12 },
-    { x: -s * 0.12, y: -s * 0.95, r: s * 0.09 },
-    { x: s * 0.06, y: -s * 0.95, r: s * 0.08 },
-    { x: s * 0.2, y: -s * 0.9, r: s * 0.07 },
-    { x: s * 0.32, y: -s * 0.8, r: s * 0.06 },
+    { x: -s * 0.32, y: -s * 0.85, r: s * 0.14 },
+    { x: -s * 0.12, y: -s * 0.98, r: s * 0.11 },
+    { x: s * 0.06, y: -s * 0.98, r: s * 0.10 },
+    { x: s * 0.2, y: -s * 0.93, r: s * 0.09 },
+    { x: s * 0.32, y: -s * 0.82, r: s * 0.08 },
   ]
   for (const toe of toes) {
+    // Dark outer
+    ctx.fillStyle = darkColor
     ctx.beginPath()
     ctx.arc(toe.x, toe.y, toe.r, 0, Math.PI * 2)
     ctx.fill()
+    // Light inner
+    ctx.fillStyle = lightColor
+    ctx.globalAlpha = fp.opacity * 0.8
+    ctx.beginPath()
+    ctx.arc(toe.x, toe.y, toe.r * 0.6, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.globalAlpha = fp.opacity
   }
 
   ctx.globalAlpha = 1
   ctx.restore()
+}
+
+// Parse rgb() or hex color string to {r, g, b}
+function parseColor(color: string): { r: number; g: number; b: number } {
+  const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
+  if (rgbMatch) {
+    return { r: +rgbMatch[1], g: +rgbMatch[2], b: +rgbMatch[3] }
+  }
+  // hex fallback
+  const hex = color.replace('#', '')
+  return {
+    r: parseInt(hex.slice(0, 2), 16),
+    g: parseInt(hex.slice(2, 4), 16),
+    b: parseInt(hex.slice(4, 6), 16),
+  }
 }
 
 // Draw a single particle (used during animation)
