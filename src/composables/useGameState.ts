@@ -275,10 +275,10 @@ export function useGameState() {
     // Emit particles + queue splat rendering
     particles.emit(splatConfig)
 
-    // Random footprint chance (~8%) - as if someone walked through the paint
-    if (Math.random() < 0.08) {
+    // Random footprint chance (~12%) - as if someone walked through the paint
+    if (Math.random() < 0.12) {
       const footAngle = Math.random() * Math.PI * 2
-      const footDist = size * 2 + Math.random() * size * 3
+      const footDist = size * 4 + Math.random() * size * 5
       const footPos = {
         x: gesture.position.x + Math.cos(footAngle) * footDist,
         y: gesture.position.y + Math.sin(footAngle) * footDist,

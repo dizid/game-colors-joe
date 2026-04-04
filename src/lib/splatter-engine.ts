@@ -158,19 +158,20 @@ export function generateFootprintSplat(
   walkAngle: number
 ): Splat {
   const isLeft = Math.random() > 0.5
+  const footSize = size * 2.2
   const footprints: Footprint[] = [{
     position,
     rotation: walkAngle + (Math.random() - 0.5) * 0.4,
-    size: size * 0.8,
+    size: footSize,
     color: varyColor(color, 10),
-    opacity: 0.7 + Math.random() * 0.25,
+    opacity: 0.8 + Math.random() * 0.15,
     isLeft,
   }]
 
   // 40% chance of a second footprint (walking pair)
   if (Math.random() < 0.4) {
-    const stepDist = size * 2.5
-    const sideOffset = size * 0.8
+    const stepDist = footSize * 2.5
+    const sideOffset = footSize * 0.8
     const perpAngle = walkAngle + Math.PI / 2
     footprints.push({
       position: {
@@ -178,7 +179,7 @@ export function generateFootprintSplat(
         y: position.y + Math.sin(walkAngle) * stepDist + Math.sin(perpAngle) * sideOffset,
       },
       rotation: walkAngle + (Math.random() - 0.5) * 0.3,
-      size: size * 0.8 * (0.95 + Math.random() * 0.1),
+      size: footSize * (0.95 + Math.random() * 0.1),
       color: varyColor(color, 10),
       opacity: 0.6 + Math.random() * 0.2,
       isLeft: !isLeft,
