@@ -275,15 +275,16 @@ export function useGameState() {
     // Emit particles + queue splat rendering
     particles.emit(splatConfig)
 
-    // Random footprint chance (~12%) - as if someone walked through the paint
-    if (Math.random() < 0.12) {
+    // Random footprint chance (~8%) - as if someone walked through the paint
+    if (Math.random() < 0.08) {
       const footAngle = Math.random() * Math.PI * 2
       const footDist = size * 4 + Math.random() * size * 5
       const footPos = {
         x: gesture.position.x + Math.cos(footAngle) * footDist,
         y: gesture.position.y + Math.sin(footAngle) * footDist,
       }
-      const footSplat = generateFootprintSplat(footPos, color.hex, size, footAngle)
+      const footColor = '#7B2D8E' // purple from Joe's paint footprint
+      const footSplat = generateFootprintSplat(footPos, footColor, size, footAngle)
       particles.queueSplat(footSplat, 0.3 + Math.random() * 0.2)
       audio.playFootstep()
     }

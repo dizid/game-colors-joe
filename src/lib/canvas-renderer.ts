@@ -147,10 +147,9 @@ function drawFootprint(ctx: CanvasRenderingContext2D, fp: Footprint): void {
     ctx.closePath()
   }
 
-  // Parse color to get RGB components for darkening/lightening
-  const rgb = parseColor(fp.color)
-  const darkColor = `rgb(${Math.max(0, rgb.r - 60)}, ${Math.max(0, rgb.g - 60)}, ${Math.max(0, rgb.b - 60)})`
-  const lightColor = `rgb(${Math.min(255, rgb.r + 70)}, ${Math.min(255, rgb.g + 70)}, ${Math.min(255, rgb.b + 70)})`
+  // Purple outer / pink inner matching Joe's paint footprint reference
+  const darkColor = fp.color  // purple base (#7B2D8E or similar)
+  const lightColor = '#E8B4C8' // pink interior from reference image
 
   // 1) Outer dark edge (paint squeezed out from under foot) — thick stroke
   solePath()
@@ -221,20 +220,7 @@ function drawFootprint(ctx: CanvasRenderingContext2D, fp: Footprint): void {
   ctx.restore()
 }
 
-// Parse rgb() or hex color string to {r, g, b}
-function parseColor(color: string): { r: number; g: number; b: number } {
-  const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
-  if (rgbMatch) {
-    return { r: +rgbMatch[1], g: +rgbMatch[2], b: +rgbMatch[3] }
-  }
-  // hex fallback
-  const hex = color.replace('#', '')
-  return {
-    r: parseInt(hex.slice(0, 2), 16),
-    g: parseInt(hex.slice(2, 4), 16),
-    b: parseInt(hex.slice(4, 6), 16),
-  }
-}
+
 
 // Draw a single particle (used during animation)
 export function drawParticle(ctx: CanvasRenderingContext2D, particle: Particle): void {
